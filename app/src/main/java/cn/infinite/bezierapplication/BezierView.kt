@@ -34,23 +34,44 @@ class BezierView : View {
             style = Paint.Style.FILL_AND_STROKE
         }
     }
-    private val mPoints = mutableListOf<PointF>()
+    private val mControlPoints = mutableListOf<PointF>()
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         if (event?.action == MotionEvent.ACTION_DOWN) {
-            mPoints.add(PointF(event.x, event.y))
+            mControlPoints.add(PointF(event.x, event.y))
+            mPath.reset()
+            invalidate()
             return true
         }
         return super.onTouchEvent(event)
     }
 
-    private fun drawBezier(canvas: Canvas) {
-        if (mPoints.size <= 1) {
-            return
+
+    fun reset() {
+        mPath.reset()
+        mControlPoints.clear()
+        drawPath = false
+        invalidate()
+    }
+
+    fun compute() {
+
+        var i = 1 / 1000f
+        while (i < 1) {
+            val p = PointF(
+                calculateBezier(mControlPoints.size - 1, 0, i, true),
+                calculateBezier(mControlPoints.size - 1, 0, i, false)
+            )
+            if (i == 1 / 1000f) {
+                mPath.moveTo(p.x, p.y)
+            } else {
+                mPath.lineTo(p.x, p.y)
+            }
+
+            i += 1 / 1000f
         }
-
-        canvas.drawPath(mPath, mPaint)
-
+        drawPath = true
+        invalidate()
     }
 
     /**
@@ -60,9 +81,9 @@ class BezierView : View {
     private fun calculateBezier(order: Int, j: Int, t: Float, calculateX: Boolean): Float {
         return if (order == 1) {
             if (calculateX) {
-                (1 - t).times(mPoints[j].x) + t.times(mPoints[j - 1].x)
+                (1 - t).times(mControlPoints[j].x) + t.times(mControlPoints[j + 1].x)
             } else {
-                (1 - t).times(mPoints[j].y) + t.times(mPoints[j - 1].y)
+                (1 - t).times(mControlPoints[j].y) + t.times(mControlPoints[j + 1].y)
             }
         } else {
             (1 - t).times(calculateBezier(order - 1, j, t, calculateX)) + t.times(
@@ -76,48 +97,17 @@ class BezierView : View {
         }
     }
 
-
-    fun reset() {
-        mPath.reset()
-        mPoints.clear()
-        invalidate()
-    }
-
-    fun compute() {
-
-        for (i in 0..999) {
-        }
-        var i = 1 / 1000f
-        while (i < 1) {
-            val p = PointF(
-                calculateBezier(mPoints.size - 1, 0, i, true),
-                calculateBezier(mPoints.size - 1, 0, i, false)
-            )
-            if (i == 1 / 1000f) {
-                mPath.moveTo(p.x, p.y)
-            } else {
-                mPath.lineTo(p.x, p.y)
-            }
-
-            i += 1 / 1000
-        }
-
-        invalidate()
-    }
-
+    private var drawPath = false
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
-//        mPath.moveTo(100f, 100f)
-////        mPath.quadTo(300f,100f,400f,400f)
-//        mPath.cubicTo(300f, 100f, 400f, 400f, 10f, 800f)
-//        canvas?.apply {
-//            drawPath(mPath, mPaint)
-//            drawPoint(100f, 100f, mPointPaint)
-//            drawPoint(300f, 100f, mPointPaint)
-//            drawPoint(400f, 400f, mPointPaint)
-//            drawPoint(10f, 800f, mPointPaint)
-//
-//        }
-        drawBezier(canvas!!)
+        canvas?.apply {
+            if (drawPath) {
+                drawPath(mPath, mPaint)
+            }
+            mControlPoints.forEach {
+                drawCircle(it.x, it.y, 8f, mPointPaint)
+            }
+        }
+
     }
 }
