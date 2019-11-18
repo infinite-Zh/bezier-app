@@ -67,22 +67,6 @@ class BezierView : View {
 
     fun compute() {
 
-//        var i = 1 / 1000f
-//        while (i < 1) {
-//            val p = PointF(
-//                calculateBezier(mControlPoints.size - 1, 0, i, true),
-//                calculateBezier(mControlPoints.size - 1, 0, i, false)
-//            )
-//            if (i == 1 / 1000f) {
-//                mBezierPath.moveTo(p.x, p.y)
-//            } else {
-//                mBezierPath.lineTo(p.x, p.y)
-//            }
-//
-//            i += 1 / 1000f
-//        }
-//        drawPath = true
-//        invalidate()
         drawPath = true
 
         val valAnim = ValueAnimator.ofFloat(0.001f, 1f)
