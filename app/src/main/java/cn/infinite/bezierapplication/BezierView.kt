@@ -44,22 +44,37 @@ class BezierView : View {
         return super.onTouchEvent(event)
     }
 
-    fun drawBezier(canvas: Canvas) {
+    private fun drawBezier(canvas: Canvas) {
         if (mPoints.size <= 1) {
             return
         }
-        if (mPoints.size == 2) {
-            mPath.moveTo(mPoints[0].x, mPoints[0].y)
-            mPath.lineTo(mPoints[1].x, mPoints[1].y)
-        } else {
-
-        }
-
 
         canvas.drawPath(mPath, mPaint)
 
     }
 
+    /**
+     * p(i,j)=
+     *
+     * */
+    private fun calculateBezier(order: Int, j: Int, t: Float, calculateX: Boolean): Float {
+        return if (order == 1) {
+            if (calculateX) {
+                (1 - t).times(mPoints[j].x) + t.times(mPoints[j - 1].x)
+            } else {
+                (1 - t).times(mPoints[j].y) + t.times(mPoints[j - 1].y)
+            }
+        } else {
+            (1 - t).times(calculateBezier(order - 1, j, t, calculateX)) + t.times(
+                calculateBezier(
+                    order - 1,
+                    j + 1,
+                    t,
+                    calculateX
+                )
+            )
+        }
+    }
 
 
     fun reset() {
@@ -68,18 +83,41 @@ class BezierView : View {
         invalidate()
     }
 
+    fun compute() {
+
+        for (i in 0..999) {
+        }
+        var i = 1 / 1000f
+        while (i < 1) {
+            val p = PointF(
+                calculateBezier(mPoints.size - 1, 0, i, true),
+                calculateBezier(mPoints.size - 1, 0, i, false)
+            )
+            if (i == 1 / 1000f) {
+                mPath.moveTo(p.x, p.y)
+            } else {
+                mPath.lineTo(p.x, p.y)
+            }
+
+            i += 1 / 1000
+        }
+
+        invalidate()
+    }
+
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
-        mPath.moveTo(100f, 100f)
-//        mPath.quadTo(300f,100f,400f,400f)
-        mPath.cubicTo(300f, 100f, 400f, 400f, 10f, 800f)
-        canvas?.apply {
-            drawPath(mPath, mPaint)
-            drawPoint(100f, 100f, mPointPaint)
-            drawPoint(300f, 100f, mPointPaint)
-            drawPoint(400f, 400f, mPointPaint)
-            drawPoint(10f, 800f, mPointPaint)
-
-        }
+//        mPath.moveTo(100f, 100f)
+////        mPath.quadTo(300f,100f,400f,400f)
+//        mPath.cubicTo(300f, 100f, 400f, 400f, 10f, 800f)
+//        canvas?.apply {
+//            drawPath(mPath, mPaint)
+//            drawPoint(100f, 100f, mPointPaint)
+//            drawPoint(300f, 100f, mPointPaint)
+//            drawPoint(400f, 400f, mPointPaint)
+//            drawPoint(10f, 800f, mPointPaint)
+//
+//        }
+        drawBezier(canvas!!)
     }
 }
