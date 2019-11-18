@@ -22,24 +22,34 @@ class BezierView : View {
             style = Paint.Style.STROKE
         }
     }
-    private val mPath: Path by lazy {
+    private val mPointPaint: Paint by lazy {
+        Paint().apply {
+            color = Color.BLACK
+            style = Paint.Style.FILL_AND_STROKE
+        }
+    }
+    private val mLinePaint: Paint by lazy {
+        Paint().apply {
+            color = Color.GRAY
+            strokeWidth = 5f
+            style = Paint.Style.STROKE
+        }
+    }
+    private val mBezierPath: Path by lazy {
+        Path().apply {
+        }
+    }
+    private val mLinePath: Path by lazy {
         Path().apply {
         }
     }
 
-    private val mPointPaint: Paint by lazy {
-        Paint().apply {
-            color = Color.BLACK
-            strokeWidth = 20f
-            style = Paint.Style.FILL_AND_STROKE
-        }
-    }
     private val mControlPoints = mutableListOf<PointF>()
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         if (event?.action == MotionEvent.ACTION_DOWN) {
             mControlPoints.add(PointF(event.x, event.y))
-            mPath.reset()
+            mBezierPath.reset()
             invalidate()
             return true
         }
@@ -48,7 +58,7 @@ class BezierView : View {
 
 
     fun reset() {
-        mPath.reset()
+        mBezierPath.reset()
         mControlPoints.clear()
         drawPath = false
         invalidate()
@@ -63,9 +73,9 @@ class BezierView : View {
                 calculateBezier(mControlPoints.size - 1, 0, i, false)
             )
             if (i == 1 / 1000f) {
-                mPath.moveTo(p.x, p.y)
+                mBezierPath.moveTo(p.x, p.y)
             } else {
-                mPath.lineTo(p.x, p.y)
+                mBezierPath.lineTo(p.x, p.y)
             }
 
             i += 1 / 1000f
@@ -102,11 +112,19 @@ class BezierView : View {
         super.onDraw(canvas)
         canvas?.apply {
             if (drawPath) {
-                drawPath(mPath, mPaint)
+                drawPath(mBezierPath, mPaint)
             }
-            mControlPoints.forEach {
-                drawCircle(it.x, it.y, 8f, mPointPaint)
+            mLinePath
+                .reset()
+            mControlPoints.forEachIndexed { index, p ->
+                drawCircle(p.x, p.y, 8f, mPointPaint)
+                if (index==0){
+                    mLinePath.moveTo(p.x,p.y)
+                }else{
+                    mLinePath.lineTo(p.x,p.y)
+                }
             }
+            drawPath(mLinePath,mLinePaint)
         }
 
     }
