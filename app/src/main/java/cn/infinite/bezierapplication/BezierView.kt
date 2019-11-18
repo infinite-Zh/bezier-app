@@ -1,5 +1,6 @@
 package cn.infinite.bezierapplication
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
@@ -66,8 +67,28 @@ class BezierView : View {
 
     fun compute() {
 
-        var i = 1 / 1000f
-        while (i < 1) {
+//        var i = 1 / 1000f
+//        while (i < 1) {
+//            val p = PointF(
+//                calculateBezier(mControlPoints.size - 1, 0, i, true),
+//                calculateBezier(mControlPoints.size - 1, 0, i, false)
+//            )
+//            if (i == 1 / 1000f) {
+//                mBezierPath.moveTo(p.x, p.y)
+//            } else {
+//                mBezierPath.lineTo(p.x, p.y)
+//            }
+//
+//            i += 1 / 1000f
+//        }
+//        drawPath = true
+//        invalidate()
+        drawPath = true
+
+        val valAnim = ValueAnimator.ofFloat(0.001f, 1f)
+        valAnim.duration = 3 * 1000
+        valAnim.addUpdateListener {
+            val i = it.animatedValue as Float
             val p = PointF(
                 calculateBezier(mControlPoints.size - 1, 0, i, true),
                 calculateBezier(mControlPoints.size - 1, 0, i, false)
@@ -78,10 +99,9 @@ class BezierView : View {
                 mBezierPath.lineTo(p.x, p.y)
             }
 
-            i += 1 / 1000f
+            invalidate()
         }
-        drawPath = true
-        invalidate()
+        valAnim.start()
     }
 
     /**
@@ -118,13 +138,13 @@ class BezierView : View {
                 .reset()
             mControlPoints.forEachIndexed { index, p ->
                 drawCircle(p.x, p.y, 8f, mPointPaint)
-                if (index==0){
-                    mLinePath.moveTo(p.x,p.y)
-                }else{
-                    mLinePath.lineTo(p.x,p.y)
+                if (index == 0) {
+                    mLinePath.moveTo(p.x, p.y)
+                } else {
+                    mLinePath.lineTo(p.x, p.y)
                 }
             }
-            drawPath(mLinePath,mLinePaint)
+            drawPath(mLinePath, mLinePaint)
         }
 
     }
